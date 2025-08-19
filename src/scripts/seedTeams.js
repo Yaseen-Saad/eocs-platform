@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import connectDB from '../config/database.js';
 import Team from '../models/Team.js';
 import Score from '../models/Score.js';
+import Problem from '../models/Problem.js';
 
 // Load environment variables
 dotenv.config();

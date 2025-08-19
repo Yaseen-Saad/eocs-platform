@@ -710,16 +710,24 @@ app.get('/scoreboard', async (req, res) => {
         const scores = await Score.find({});
         console.log('Found scores:', scores.length);
         
-        // Create mock problems structure based on the score data
-        // This represents the problems as they exist in the competition (1, 2, 3, 4 with sections A-E)
-        const problems = [
-            { id: '1', sections: new Map([['A', {}], ['B', {}], ['C', {}], ['D', {}], ['E', {}]]) },
-            { id: '2', sections: new Map([['A', {}], ['B', {}], ['C', {}], ['D', {}], ['E', {}]]) },
-            { id: '3', sections: new Map([['A', {}], ['B', {}], ['C', {}], ['D', {}], ['E', {}]]) },
-            { id: '4', sections: new Map([['A', {}], ['B', {}], ['C', {}], ['D', {}], ['E', {}]]) }
-        ];
+        // Get actual problems from database and organize by section
+        const allProblems = await Problem.find({}).sort({ section: 1, number: 1 });
+        console.log('Found problems in database:', allProblems.length);
         
-        console.log('Using problems structure:', problems.length);
+        // Group problems by section for display
+        const problemsBySection = {};
+        allProblems.forEach(problem => {
+            if (!problemsBySection[problem.section]) {
+                problemsBySection[problem.section] = [];
+            }
+            problemsBySection[problem.section].push({
+                id: problem.id,
+                title: problem.title,
+                sections: problem.sections || new Map()
+            });
+        });
+        
+        console.log('Problems organized by section:', Object.keys(problemsBySection));
         
         // Create detailed scoreboard data
         const scoreboard = [];
@@ -781,12 +789,13 @@ app.get('/scoreboard', async (req, res) => {
         
         res.render('scoreboard', { 
             scoreboard, 
-            problems: problems 
+            problems: problemsBySection,
+            allProblems: allProblems
         });
         
     } catch (error) {
         console.error('Scoreboard error:', error);
-        res.render('scoreboard', { scoreboard: [], problems: [] });
+        res.render('scoreboard', { scoreboard: [], problems: {}, allProblems: [] });
     }
 });
 
