@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "functions": {
-    "src/index.js": {
-      "runtime": "@vercel/node@3.0.0"
+  "builds": [
+    {
+      "src": "src/index.js",
+      "use": "@vercel/node"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/public/(.*)",
