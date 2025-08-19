@@ -82,9 +82,9 @@ app.set('views', path.join(__dirname, '..', 'views'));
 // Static files
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
-// Configure multer for file uploads
+// Configure multer for file uploads (Vercel-compatible)
 const upload = multer({
-    dest: 'uploads/',
+    storage: multer.memoryStorage(), // Use memory storage for Vercel
     limits: {
         fileSize: 5 * 1024 * 1024 // 5MB limit
     },
