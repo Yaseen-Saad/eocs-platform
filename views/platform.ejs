@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EOCS Problems Platform</title>
+    <link rel="stylesheet" href="/public/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- MathJax for LaTeX support -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="platform-container">
+        <header class="platform-header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>EOCS</h1>
+                    <span>Problems Platform</span>
+                </div>
+                <div class="team-info">
+                    <span>Team: <%= teamId %></span>
+                    <a href="/logout" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="platform-main">
+            <% if (competitionStatus.status === 'before') { %>
+                <div class="timer-section">
+                    <h2>Competition Starts In</h2>
+                    <div class="countdown-container">
+                        <div class="countdown-boxes">
+                            <div class="countdown-box">
+                                <div class="countdown-number days">00</div>
+                                <div class="countdown-label">DAYS</div>
+                            </div>
+                            <div class="countdown-box">
+                                <div class="countdown-number hours">00</div>
+                                <div class="countdown-label">HOURS</div>
+                            </div>
+                            <div class="countdown-box">
+                                <div class="countdown-number minutes">00</div>
+                                <div class="countdown-label">MINUTES</div>
+                            </div>
+                            <div class="countdown-box">
+                                <div class="countdown-number seconds">00</div>
+                                <div class="countdown-label">SECONDS</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="timer-message">Please wait for the competition to begin...</p>
+                </div>
+            <% } else if (competitionStatus.status === 'active') { %>
+                <div class="timer-section">
+                    <h2>Time Remaining</h2>
+                    <div class="countdown-container">
+                        <div class="countdown-boxes">
+                            <div class="countdown-box">
+                                <div class="countdown-number hours">00</div>
+                                <div class="countdown-label">HOURS</div>
+                            </div>
+                            <div class="countdown-box">
+                                <div class="countdown-number minutes">00</div>
+                                <div class="countdown-label">MINUTES</div>
+                            </div>
+                            <div class="countdown-box">
+                                <div class="countdown-number seconds">00</div>
+                                <div class="countdown-label">SECONDS</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Announcements and Clarifications Section -->
+                <div class="announcements-section">
+                    <div class="announcements-tabs">
+                        <button class="announce-tab-btn active" data-tab="announcements">
+                            <i class="fas fa-bullhorn"></i>
+                            Announcements
+                        </button>
+                        <button class="announce-tab-btn" data-tab="clarifications">
+                            <i class="fas fa-question-circle"></i>
+                            Clarifications
+                        </button>
+                        <button class="announce-tab-btn" data-tab="request">
+                            <i class="fas fa-paper-plane"></i>
+                            Request Clarification
+                        </button>
+                    </div>
+
+                    <div class="announce-content" id="announcements-content">
+                        <h3>Latest Announcements</h3>
+                        <div class="announcements-list">
+                            <% if (announcements && announcements.length > 0) { %>
+                                <% announcements.forEach(announcement => { %>
+                                    <div class="announcement-item <%= announcement.priority %>">
+                                        <div class="announcement-header">
+                                            <h4><%= announcement.title %></h4>
+                                            <span class="announcement-time">
+                                                <%= new Date(announcement.createdAt).toLocaleString() %>
+                                            </span>
+                                            <span class="priority-badge <%= announcement.priority %>">
+                                                <%= announcement.priority.toUpperCase() %>
+                                            </span>
+                                        </div>
+                                        <div class="announcement-content">
+                                            <%= announcement.content %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="no-announcements">
+                                    <i class="fas fa-info-circle"></i>
+                                    No announcements yet
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="announce-content" id="clarifications-content" style="display: none;">
+                        <h3>Answered Clarifications</h3>
+                        <div class="clarifications-list">
+                            <% if (clarifications && clarifications.length > 0) { %>
+                                <% clarifications.forEach(clarification => { %>
+                                    <div class="clarification-item <%= clarification.teamId === teamId ? 'own-clarification' : 'public-clarification' %>">
+                                        <div class="clarification-header">
+                                            <span class="problem-badge">Problem <%= clarification.problemId %></span>
+                                            <% if (clarification.teamId === teamId) { %>
+                                                <span class="team-badge own">Your Question</span>
+                                            <% } else { %>
+                                                <span class="team-badge public">Public</span>
+                                            <% } %>
+                                            <span class="clarification-time">
+                                                <%= new Date(clarification.answeredAt).toLocaleString() %>
+                                            </span>
+                                        </div>
+                                        <div class="clarification-question">
+                                            <strong>Q:</strong> <%= clarification.question %>
+                                        </div>
+                                        <div class="clarification-answer">
+                                            <strong>A:</strong> <%= clarification.answer %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="no-clarifications">
+                                    <i class="fas fa-comments"></i>
+                                    No clarifications yet
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="announce-content" id="request-content" style="display: none;">
+                        <h3>Request Clarification</h3>
+                        <form id="clarificationForm" class="clarification-form">
+                            <div class="form-group">
+                                <label for="problemSelect">Problem:</label>
+                                <select id="problemSelect" name="problemId" required>
+                                    <option value="">Select a problem</option>
+                                    <% if (problems && problems.length > 0) { %>
+                                        <% problems.forEach(problem => { %>
+                                            <option value="<%= problem.id %>"><%= problem.section %><%= problem.number %>: <%= problem.title %></option>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <option value="1">A1: Problem 1</option>
+                                        <option value="2">A2: Problem 2</option>
+                                        <option value="3">A3: Problem 3</option>
+                                        <option value="4">A4: Problem 4</option>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="questionText">Your Question:</label>
+                                <textarea id="questionText" name="question" rows="4" 
+                                    placeholder="Please be specific about your question..." required></textarea>
+                            </div>
+                            <button type="submit" class="submit-clarification-btn">
+                                <i class="fas fa-paper-plane"></i>
+                                Submit Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="problems-section">
+                    <h2>Problems</h2>
+                    <% if (problems && problems.length > 0) { %>
+                        <% const sectionOrder = ['A', 'B', 'C', 'D', 'E']; %>
+                        <% const sectionNames = {
+                            'A': 'Computational Physics',
+                            'B': 'Computational Chemistry', 
+                            'C': 'Computational Mathematics',
+                            'D': 'Computational Biology',
+                            'E': 'Computational Engineering'
+                        }; %>
+                        
+                        <% sectionOrder.forEach(sectionLetter => { %>
+                            <% const sectionProblems = problems.filter(p => p.section === sectionLetter); %>
+                            <% if (sectionProblems.length > 0) { %>
+                                <div class="section-group">
+                                    <h3 class="section-title">
+                                        <span class="section-badge-large">Section <%= sectionLetter %></span>
+                                        <%= sectionNames[sectionLetter] %>
+                                    </h3>
+                                    <div class="problems-grid">
+                                        <% sectionProblems.forEach(problem => { %>
+                                            <div class="problem-card">
+                                                <div class="problem-header">
+                                                    <h4><%= problem.title %></h4>
+                                                    <span class="problem-id"><%= problem.section %><%= problem.number %></span>
+                                                </div>
+                                                <div class="problem-sections">
+                                                    <a href="/problem/<%= problem.id %>" class="section-link">
+                                                        <div class="section-badge">
+                                                            <span class="section-label">
+                                                                <% if (problem.sections && problem.sections.size > 0) { %>
+                                                                    <%= problem.sections.size %> Subtasks
+                                                                <% } else { %>
+                                                                    View Problem
+                                                                <% } %>
+                                                            </span>
+                                                            <i class="fas fa-arrow-right"></i>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                </div>
+                            <% } %>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="no-problems">
+                            <i class="fas fa-tasks"></i>
+                            <p>Problems will be available when the competition starts.</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <% } else { %>
+                <div class="timer-section">
+                    <h2>Competition Ended</h2>
+                    <p class="timer-message">The competition has ended. Thank you for participating!</p>
+                    <a href="/scoreboard" class="scoreboard-btn">
+                        <i class="fas fa-trophy"></i>
+                        View Final Scoreboard
+                    </a>
+                </div>
+            <% } %>
+        </main>
+
+        <footer class="platform-footer">
+            <p><a href="/scoreboard">View Scoreboard</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Timer script
+        <% if (competitionStatus.status === 'before') { %>
+            const targetTime = new Date('<%= startTime %>').getTime();
+        <% } else if (competitionStatus.status === 'active') { %>
+            const targetTime = new Date('<%= endTime %>').getTime();
+        <% } %>
+
+        <% if (competitionStatus.status !== 'ended') { %>
+            function updateTimer() {
+                const now = new Date().getTime();
+                const distance = targetTime - now;
+
+                if (distance < 0) {
+                    location.reload();
+                    return;
+                }
+
+                <% if (competitionStatus.status === 'before') { %>
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.querySelector('.days').textContent = String(days).padStart(2, '0');
+                    document.querySelector('.hours').textContent = String(hours).padStart(2, '0');
+                    document.querySelector('.minutes').textContent = String(minutes).padStart(2, '0');
+                    document.querySelector('.seconds').textContent = String(seconds).padStart(2, '0');
+                <% } else { %>
+                    const hours = Math.floor(distance / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.querySelector('.hours').textContent = String(hours).padStart(2, '0');
+                    document.querySelector('.minutes').textContent = String(minutes).padStart(2, '0');
+                    document.querySelector('.seconds').textContent = String(seconds).padStart(2, '0');
+                <% } %>
+            }
+
+            setInterval(updateTimer, 1000);
+            updateTimer();
+        <% } %>
+
+        // Announcements tabs functionality
+        document.querySelectorAll('.announce-tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+                
+                // Remove active from all tabs
+                document.querySelectorAll('.announce-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.announce-content').forEach(c => c.style.display = 'none');
+                
+                // Activate current tab
+                this.classList.add('active');
+                document.getElementById(tabName + '-content').style.display = 'block';
+            });
+        });
+
+        // Clarification form submission
+        const clarificationForm = document.getElementById('clarificationForm');
+        if (clarificationForm) {
+            clarificationForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const data = {
+                    problemId: formData.get('problemId'),
+                    question: formData.get('question')
+                };
+
+                try {
+                    // Submit to our server first
+                    const response = await fetch('/clarification', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Clarification request submitted successfully! You will be notified when it is answered.');
+                        this.reset();
+                        // Refresh the page to show any new clarifications
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert(result.message || 'Error submitting clarification request');
+                    }
+                } catch (error) {
+                    alert('Error submitting clarification request');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

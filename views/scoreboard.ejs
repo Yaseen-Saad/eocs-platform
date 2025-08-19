@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EOCS Scoreboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Egyptian Theme Variables */
+        :root {
+            --egyptian-gold: #ad8231;
+            --egyptian-dark: #3f3938;
+            --egyptian-light: #f5f0ec;
+            --egyptian-gray: #606060;
+            --egyptian-beige: #e4d5bd;
+            --gold-glow: 0 0 20px rgba(173, 130, 49, 0.4);
+            --beige-glow: 0 0 30px rgba(228, 213, 189, 0.5);
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--egyptian-dark);
+            background-image: linear-gradient(rgba(63, 57, 56, 0.97), rgba(63, 57, 56, 0.97));
+            color: var(--egyptian-light);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Egyptian border patterns */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(90deg, 
+                var(--egyptian-gold) 0%, 
+                var(--egyptian-beige) 25%, 
+                var(--egyptian-gold) 50%, 
+                var(--egyptian-beige) 75%, 
+                var(--egyptian-gold) 100%);
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            background: rgba(63, 57, 56, 0.95);
+            border-radius: 16px;
+            box-shadow: var(--gold-glow);
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border: 2px solid var(--egyptian-gold);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid var(--egyptian-gold);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--egyptian-gold);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+            text-shadow: var(--gold-glow);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--egyptian-beige);
+            margin-top: 10px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .home-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, var(--egyptian-gold), var(--egyptian-beige));
+            color: var(--egyptian-dark);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: var(--gold-glow);
+        }
+
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(173, 130, 49, 0.6);
+            color: var(--egyptian-dark);
+        }
+
+        .scoreboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(245, 240, 236, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            min-width: 1400px; /* Ensure table is wide enough for all columns */
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 2px solid var(--egyptian-gold);
+            border-radius: 12px;
+        }
+
+        .scoreboard-table th {
+            padding: 16px 12px;
+            background: linear-gradient(135deg, var(--egyptian-gold), #c8851b);
+            color: var(--egyptian-dark);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-align: center;
+            border: none;
+            font-size: 0.9rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-header {
+            font-size: 0.7rem !important;
+            padding: 8px 4px !important;
+            background: linear-gradient(135deg, var(--egyptian-beige), #d4c5a9) !important;
+            color: var(--egyptian-dark) !important;
+        }
+
+        .problem-total {
+            background: linear-gradient(135deg, var(--egyptian-gold), #c8851b) !important;
+            color: var(--egyptian-dark) !important;
+            font-weight: 800 !important;
+        }
+
+        .scoreboard-table td {
+            padding: 14px 12px;
+            text-align: center;
+            border-bottom: 1px solid rgba(173, 130, 49, 0.2);
+            background: rgba(245, 240, 236, 0.03);
+            color: var(--egyptian-light);
+            font-weight: 500;
+        }
+
+        .section-cell {
+            padding: 8px 4px !important;
+            font-size: 0.8rem;
+            min-width: 40px;
+            max-width: 50px;
+        }
+
+        .section-cell.correct {
+            background: rgba(46, 204, 113, 0.8) !important;
+            color: white !important;
+        }
+
+        .section-cell.wrong {
+            background: rgba(231, 76, 60, 0.8) !important;
+            color: white !important;
+        }
+
+        .section-cell.unsolved {
+            background: rgba(149, 165, 166, 0.3) !important;
+            color: var(--egyptian-gray) !important;
+        }
+
+        .section-cell.partial {
+            background: rgba(243, 156, 18, 0.8) !important;
+            color: white !important;
+        }
+
+        .problem-total.correct {
+            background: rgba(46, 204, 113, 0.9) !important;
+            color: white !important;
+        }
+
+        .problem-total.wrong {
+            background: rgba(231, 76, 60, 0.9) !important;
+            color: white !important;
+        }
+
+        .problem-total.partial {
+            background: rgba(243, 156, 18, 0.9) !important;
+            color: white !important;
+        }
+
+        .problem-total.unsolved {
+            background: rgba(149, 165, 166, 0.5) !important;
+            color: var(--egyptian-light) !important;
+        }
+
+        .scoreboard-table tr:nth-child(even) td {
+            background: rgba(173, 130, 49, 0.05);
+        }
+
+        .scoreboard-table tr:hover td {
+            background: rgba(173, 130, 49, 0.15);
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+
+        .sticky-rank {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background: rgba(63, 57, 56, 0.95) !important;
+            font-weight: 700;
+            color: var(--egyptian-gold);
+            font-size: 1.1rem;
+            text-shadow: var(--gold-glow);
+            min-width: 60px;
+        }
+
+        .sticky-team-id {
+            position: sticky;
+            left: 60px;
+            z-index: 10;
+            background: rgba(63, 57, 56, 0.95) !important;
+            font-weight: 700;
+            color: var(--egyptian-beige);
+            font-family: 'Orbitron', sans-serif;
+            min-width: 80px;
+        }
+
+        .sticky-team-name {
+            position: sticky;
+            left: 140px;
+            z-index: 10;
+            background: rgba(63, 57, 56, 0.95) !important;
+            text-align: left;
+            font-weight: 600;
+            color: var(--egyptian-light);
+            min-width: 150px;
+        }
+
+        .sticky-score {
+            position: sticky;
+            left: 290px;
+            z-index: 10;
+            background: rgba(63, 57, 56, 0.95) !important;
+            font-weight: 700;
+            color: var(--egyptian-gold);
+            font-size: 1.1rem;
+            text-shadow: var(--gold-glow);
+            min-width: 70px;
+        }
+
+        .sticky-penalty {
+            position: sticky;
+            left: 360px;
+            z-index: 10;
+            background: rgba(63, 57, 56, 0.95) !important;
+            color: #e74c3c;
+            font-weight: 600;
+            min-width: 70px;
+        }
+
+        .no-teams {
+            text-align: center;
+            color: var(--egyptian-gray);
+            font-style: italic;
+            padding: 40px;
+            font-size: 1.1rem;
+        }
+
+        .footer-info {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--egyptian-gold);
+            color: var(--egyptian-beige);
+        }
+
+        .footer-info p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .update-time {
+            color: var(--egyptian-gold);
+            font-weight: 600;
+        }
+
+        /* Egyptian decorative elements */
+        .decorative-border {
+            height: 4px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--egyptian-gold) 20%, 
+                var(--egyptian-beige) 40%, 
+                var(--egyptian-gold) 60%, 
+                var(--egyptian-beige) 80%, 
+                transparent 100%);
+            margin: 20px 0;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .scoreboard-table th,
+            .scoreboard-table td {
+                padding: 10px 8px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="home-btn">
+            <i class="fas fa-home"></i> Back to Home
+        </a>
+        
+        <div class="header">
+            <h1><i class="fas fa-trophy"></i> EOCS Scoreboard</h1>
+            <p class="subtitle">Egyptian Olympiad in Computational Science</p>
+        </div>
+        
+        <div class="decorative-border"></div>
+        
+        <div class="table-wrapper">
+            <table class="scoreboard-table">
+            <thead>
+                <tr>
+                    <th rowspan="2" class="rank">Rank</th>
+                    <th rowspan="2" class="team-id">Team ID</th>
+                    <th rowspan="2">Team Name</th>
+                    <th rowspan="2" class="score">Total</th>
+                    <th rowspan="2" class="penalty">Penalty</th>
+                    <% if (problems && Array.isArray(problems)) { %>
+                        <% problems.forEach(problem => { %>
+                            <% const sectionKeys = Array.from(problem.sections.keys()).sort((a, b) => parseInt(a) - parseInt(b)); %>
+                            <th colspan="<%= sectionKeys.length + 1 %>">Problem <%= problem.id %></th>
+                        <% }); %>
+                    <% } %>
+                </tr>
+                <tr>
+                    <% if (problems && Array.isArray(problems)) { %>
+                        <% problems.forEach(problem => { %>
+                            <% const sectionKeys = Array.from(problem.sections.keys()).sort((a, b) => parseInt(a) - parseInt(b)); %>
+                            <th class="problem-total">Total</th>
+                            <% sectionKeys.forEach(sectionKey => { %>
+                                <th class="section-header"><%= sectionKey %></th>
+                            <% }); %>
+                        <% }); %>
+                    <% } %>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (scoreboard && Array.isArray(scoreboard) && scoreboard.length > 0) { %>
+                    <% scoreboard.forEach((team, index) => { %>
+                        <tr>
+                            <td class="rank sticky-rank">
+                                <% if (index === 0) { %>
+                                    <i class="fas fa-crown" style="color: #ffd700;"></i> <%= index + 1 %>
+                                <% } else if (index === 1) { %>
+                                    <i class="fas fa-medal" style="color: #c0c0c0;"></i> <%= index + 1 %>
+                                <% } else if (index === 2) { %>
+                                    <i class="fas fa-medal" style="color: #cd7f32;"></i> <%= index + 1 %>
+                                <% } else { %>
+                                    <%= index + 1 %>
+                                <% } %>
+                            </td>
+                            <td class="team-id sticky-team-id"><%= team.teamId %></td>
+                            <td class="team-name sticky-team-name"><%= team.teamName || 'Team ' + team.teamId %></td>
+                            <td class="score sticky-score"><%= team.totalScore || 0 %></td>
+                            <td class="penalty sticky-penalty"><%= team.totalPenalty || 0 %></td>
+                            
+                            <!-- Problem scores -->
+                            <% if (problems && Array.isArray(problems)) { %>
+                                <% problems.forEach(problem => { %>
+                                    <% const problemData = (team.problems && team.problems[problem.id]) ? team.problems[problem.id] : {
+                                        totalScore: 0, 
+                                        status: 'unsolved', 
+                                        sections: new Map()
+                                    }; %>
+                                    <td class="problem-total <%= problemData.status %>">
+                                        <%= problemData.totalScore || 0 %>
+                                    </td>
+                                    <!-- Section scores -->
+                                    <% const sectionKeys = Array.from(problem.sections.keys()).sort((a, b) => parseInt(a) - parseInt(b)); %>
+                                    <% sectionKeys.forEach(sectionKey => { %>
+                                        <% const sectionData = (problemData.sections && problemData.sections.get && problemData.sections.get(sectionKey)) ? problemData.sections.get(sectionKey) : { status: 'unsolved', trials: 0 }; %>
+                                        <!-- Debug: Section <%= sectionKey %> status: <%= sectionData.status %> -->
+                                        <td class="section-cell <%= sectionData.status %>"
+                                            title="Section <%= sectionKey %>: <%= sectionData.status %> (Score: <%= sectionData.score || 0 %>, Trials: <%= sectionData.trials || 0 %>)">
+                                            <% if (sectionData.status === 'correct') { %>
+                                                <i class="fas fa-check"></i>
+                                            <% } else if (sectionData.status === 'wrong') { %>
+                                                <i class="fas fa-times"></i>
+                                            <% } else { %>
+                                                <i class="fas fa-minus"></i>
+                                            <% } %>
+                                            <% if (sectionData.trials > 0) { %>
+                                                <br><small><%= sectionData.trials %></small>
+                                            <% } %>
+                                        </td>
+                                    <% }); %>
+                                <% }); %>
+                            <% } %>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="<%= (problems && problems.length > 0) ? (5 + problems.reduce((sum, p) => sum + Array.from(p.sections.keys()).length + 1, 0)) : 29 %>" class="no-teams">
+                            <i class="fas fa-hourglass-half"></i><br>
+                            No teams have logged in yet<br>
+                            <small>The competition will begin soon...</small>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+        </div>
+        
+        <div class="decorative-border"></div>
+        
+        <div class="legend" style="background: rgba(63, 57, 56, 0.8); padding: 20px; border-radius: 8px; border: 1px solid var(--egyptian-gold); margin: 20px 0;">
+            <h3 style="color: var(--egyptian-gold); margin-bottom: 15px; text-align: center;">Legend</h3>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="background: rgba(46, 204, 113, 0.8); color: white; padding: 4px 8px; border-radius: 4px;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span style="color: var(--egyptian-light);">Correct</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="background: rgba(243, 156, 18, 0.9); color: white; padding: 4px 8px; border-radius: 4px;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <span style="color: var(--egyptian-light);">Partial</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="background: rgba(231, 76, 60, 0.8); color: white; padding: 4px 8px; border-radius: 4px;">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <span style="color: var(--egyptian-light);">Wrong Answer</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="background: rgba(149, 165, 166, 0.3); color: var(--egyptian-gray); padding: 4px 8px; border-radius: 4px;">
+                        <i class="fas fa-minus"></i>
+                    </div>
+                    <span style="color: var(--egyptian-light);">Not Attempted</span>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 15px; color: var(--egyptian-beige); font-size: 0.9rem;">
+                <strong>Scoring:</strong> Each section = 20 points | Total per problem = 100 points | Small numbers show attempt count
+            </p>
+        </div>
+        
+        <div class="footer-info">
+            <p>Last updated: <span class="update-time"><%= new Date().toLocaleString() %></span></p>
+            <p><i class="fas fa-sync-alt"></i> Auto-refreshes every 30 seconds</p>
+            <p>&copy; 2025 Egyptian Olympiad in Computational Science</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh scoreboard every 30 seconds
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>

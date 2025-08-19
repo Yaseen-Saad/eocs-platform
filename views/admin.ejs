@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - EOCS Platform</title>
+    <link rel="stylesheet" href="/public/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>EOCS Admin Panel</h1>
+                </div>
+                <div class="admin-nav">
+                    <a href="/scoreboard" class="nav-btn">
+                        <i class="fas fa-trophy"></i>
+                        Scoreboard
+                    </a>
+                    <a href="/admin/logout" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="admin-main">
+            <div class="admin-tabs">
+                <button class="tab-btn active" data-tab="submissions">Submissions</button>
+                <button class="tab-btn" data-tab="reviews">Review Queue <span id="review-count" class="badge"></span></button>
+                <button class="tab-btn" data-tab="announcements">Announcements</button>
+                <button class="tab-btn" data-tab="clarifications">Clarifications</button>
+            </div>
+
+            <div class="tab-content" id="submissions-tab">
+                <h2>Recent Submissions</h2>
+                <div class="submissions-list">
+                    <% if (submissions.length > 0) { %>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Team ID</th>
+                                    <th>Problem</th>
+                                    <th>Section</th>
+                                    <th>Language</th>
+                                    <th>Code Preview</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% submissions.slice(-20).reverse().forEach(submission => { %>
+                                    <tr>
+                                        <td><%= new Date(submission.timestamp).toLocaleString() %></td>
+                                        <td><%= submission.teamId %></td>
+                                        <td>Problem <%= submission.problemId %></td>
+                                        <td>Section <%= submission.section %></td>
+                                        <td>
+                                            <span class="language-badge <%= submission.language %>">
+                                                <%= submission.language === 'py' ? 'Python' : 'C++' %>
+                                            </span>
+                                        </td>
+                                        <td class="code-preview" title="<%= submission.codePreview %>">
+                                            <%= submission.codePreview %>
+                                        </td>
+                                        <td>
+                                            <span class="review-status-badge <%= submission.reviewStatus || 'not_reviewed' %>">
+                                                <% if (submission.reviewStatus === 'under_review') { %>
+                                                    🟣 Under Review
+                                                <% } else if (submission.reviewStatus === 'reviewed') { %>
+                                                    <% if (submission.status === 'correct') { %>
+                                                        ✅ Correct
+                                                    <% } else if (submission.status === 'wrong') { %>
+                                                        ❌ Wrong
+                                                    <% } %>
+                                                <% } else { %>
+                                                    ⚪ Not Reviewed
+                                                <% } %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    <% } else { %>
+                        <p class="no-submissions">No submissions yet</p>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="tab-content" id="reviews-tab" style="display: none;">
+                <h2>Submission Review Queue</h2>
+                <div class="review-instructions">
+                    <p><strong>Instructions:</strong> Review submissions in Google Forms, then mark them as correct or wrong below.</p>
+                    <p><strong>Purple status</strong> means the submission is waiting for your review.</p>
+                </div>
+                
+                <div class="review-queue">
+                    <% const underReviewSubmissions = submissions.filter(s => s.reviewStatus === 'under_review'); %>
+                    <% if (underReviewSubmissions.length > 0) { %>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Team ID</th>
+                                    <th>Problem</th>
+                                    <th>Section</th>
+                                    <th>Language</th>
+                                    <th>Code Preview</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% underReviewSubmissions.forEach(submission => { %>
+                                    <tr class="review-item" data-id="<%= submission._id %>">
+                                        <td><%= new Date(submission.timestamp).toLocaleString() %></td>
+                                        <td><%= submission.teamId %></td>
+                                        <td>Problem <%= submission.problemId %></td>
+                                        <td>Section <%= submission.section %></td>
+                                        <td>
+                                            <span class="language-badge <%= submission.language %>">
+                                                <%= submission.language === 'py' ? 'Python' : 'C++' %>
+                                            </span>
+                                        </td>
+                                        <td class="code-preview" title="Click to view full code">
+                                            <button class="view-code-btn" onclick="viewFullCode('<%= submission._id %>', `<%= submission.codePreview %>`)">
+                                                View Code
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button class="review-btn correct" onclick="reviewSubmission('<%= submission._id %>', 'correct')">
+                                                ✅ Mark Correct
+                                            </button>
+                                            <button class="review-btn wrong" onclick="reviewSubmission('<%= submission._id %>', 'wrong')">
+                                                ❌ Mark Wrong
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    <% } else { %>
+                        <div class="no-reviews">
+                            <i class="fas fa-check-circle"></i>
+                            <p>No submissions pending review!</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="tab-content" id="announcements-tab" style="display: none;">
+                <h2>Announcements Management</h2>
+                
+                <div class="create-announcement">
+                    <h3>Create New Announcement</h3>
+                    <form id="announcementForm" class="admin-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="announcementTitle">Title:</label>
+                                <input type="text" id="announcementTitle" name="title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="announcementPriority">Priority:</label>
+                                <select id="announcementPriority" name="priority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="announcementContent">Content:</label>
+                            <textarea id="announcementContent" name="content" rows="4" required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="announcementPublic" name="isPublic" checked>
+                                    Make Public
+                                </label>
+                            </div>
+                            <button type="submit" class="admin-btn">Create Announcement</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="announcements-list">
+                    <h3>Recent Announcements</h3>
+                    <% if (announcements.length > 0) { %>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Priority</th>
+                                    <th>Public</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% announcements.forEach(announcement => { %>
+                                    <tr>
+                                        <td><%= announcement.title %></td>
+                                        <td><span class="priority-badge <%= announcement.priority %>"><%= announcement.priority.toUpperCase() %></span></td>
+                                        <td><%= announcement.isPublic ? 'Yes' : 'No' %></td>
+                                        <td><%= new Date(announcement.createdAt).toLocaleString() %></td>
+                                        <td>
+                                            <button class="delete-btn" onclick="deleteAnnouncement('<%= announcement._id %>')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    <% } else { %>
+                        <p class="no-data">No announcements yet</p>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="tab-content" id="clarifications-tab" style="display: none;">
+                <h2>Clarification Requests</h2>
+                
+                <% if (clarifications.length > 0) { %>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th>Problem</th>
+                                <th>Question</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% clarifications.forEach(clarification => { %>
+                                <tr class="clarification-row" data-id="<%= clarification._id %>">
+                                    <td><%= clarification.teamId %></td>
+                                    <td>Problem <%= clarification.problemId %></td>
+                                    <td class="question-text"><%= clarification.question %></td>
+                                    <td><span class="status-badge <%= clarification.status %>"><%= clarification.status.toUpperCase() %></span></td>
+                                    <td><%= new Date(clarification.submittedAt).toLocaleString() %></td>
+                                    <td>
+                                        <% if (clarification.status === 'pending') { %>
+                                            <button class="answer-btn" onclick="showAnswerForm('<%= clarification._id %>')">
+                                                <i class="fas fa-reply"></i> Answer
+                                            </button>
+                                        <% } else { %>
+                                            <span class="answered-info">
+                                                <%= clarification.isPublic ? 'Public' : 'Private' %>
+                                                <br><small><%= new Date(clarification.answeredAt).toLocaleString() %></small>
+                                            </span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                                <% if (clarification.status === 'answered') { %>
+                                    <tr class="answer-row">
+                                        <td colspan="6">
+                                            <strong>Answer:</strong> <%= clarification.answer %>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <p class="no-data">No clarification requests yet</p>
+                <% } %>
+            </div>
+        </main>
+    </div>
+
+    <!-- Answer Modal -->
+    <div id="answerModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Answer Clarification</h3>
+                <span class="close" onclick="closeAnswerModal()">&times;</span>
+            </div>
+            <form id="answerForm" class="modal-form">
+                <input type="hidden" id="clarificationId" name="clarificationId">
+                <div class="form-group">
+                    <label for="answerText">Answer:</label>
+                    <textarea id="answerText" name="answer" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="answerPublic" name="isPublic">
+                        Make this answer public to all teams
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeAnswerModal()" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="submit-btn">Submit Answer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Code Viewer Modal -->
+    <div id="codeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Submission Code</h3>
+                <span class="close" onclick="closeCodeModal()">&times;</span>
+            </div>
+            <div class="code-viewer">
+                <div class="code-info">
+                    <span id="codeTeamInfo"></span>
+                    <span id="codeLanguageInfo"></span>
+                </div>
+                <pre><code id="codeContent"></code></pre>
+                <div class="code-actions">
+                    <button type="button" onclick="copyCode()" class="copy-btn">
+                        <i class="fas fa-copy"></i> Copy Code
+                    </button>
+                    <button type="button" onclick="closeCodeModal()" class="close-btn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+                
+                // Remove active from all tabs
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                
+                // Activate current tab
+                this.classList.add('active');
+                document.getElementById(tabName + '-tab').style.display = 'block';
+            });
+        });
+
+        // Section status change handling
+        document.querySelectorAll('.section-select').forEach(select => {
+            select.addEventListener('change', async function() {
+                const teamId = this.dataset.team;
+                const problemId = this.dataset.problem;
+                const section = this.dataset.section;
+                const status = this.value;
+
+                try {
+                    const response = await fetch('/admin/update-section', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            teamId,
+                            problemId,
+                            section,
+                            status
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Section updated successfully', 'success');
+                        // Reload page to update scores
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showNotification(result.message || 'Error updating section', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error updating section', 'error');
+                }
+            });
+        });
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Announcement form submission
+        document.getElementById('announcementForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                title: formData.get('title'),
+                content: formData.get('content'),
+                priority: formData.get('priority'),
+                isPublic: formData.get('isPublic') ? 'true' : 'false'
+            };
+
+            try {
+                const response = await fetch('/admin/announcement', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Announcement created successfully', 'success');
+                    this.reset();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification(result.message || 'Error creating announcement', 'error');
+                }
+            } catch (error) {
+                showNotification('Error creating announcement', 'error');
+            }
+        });
+
+        // Answer form submission
+        document.getElementById('answerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                clarificationId: formData.get('clarificationId'),
+                answer: formData.get('answer'),
+                isPublic: formData.get('isPublic') ? 'true' : 'false'
+            };
+
+            try {
+                const response = await fetch('/admin/clarification/answer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Clarification answered successfully', 'success');
+                    closeAnswerModal();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification(result.message || 'Error answering clarification', 'error');
+                }
+            } catch (error) {
+                showNotification('Error answering clarification', 'error');
+            }
+        });
+
+        // Modal functions
+        function showAnswerForm(clarificationId) {
+            document.getElementById('clarificationId').value = clarificationId;
+            document.getElementById('answerModal').style.display = 'block';
+        }
+
+        function closeAnswerModal() {
+            document.getElementById('answerModal').style.display = 'none';
+            document.getElementById('answerForm').reset();
+        }
+
+        // Delete announcement
+        async function deleteAnnouncement(announcementId) {
+            if (!confirm('Are you sure you want to delete this announcement?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/announcement/${announcementId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Announcement deleted successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification(result.message || 'Error deleting announcement', 'error');
+                }
+            } catch (error) {
+                showNotification('Error deleting announcement', 'error');
+            }
+        }
+
+        // Review submission function
+        async function reviewSubmission(submissionId, decision) {
+            const notes = prompt(`Add notes for this ${decision} submission (optional):`);
+            
+            try {
+                const response = await fetch('/admin/review-submission', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        submissionId,
+                        decision,
+                        notes: notes || ''
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Submission marked as ${decision}`, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification(result.message || 'Error reviewing submission', 'error');
+                }
+            } catch (error) {
+                showNotification('Error reviewing submission', 'error');
+            }
+        }
+
+        // Update review count
+        async function updateReviewCount() {
+            try {
+                const response = await fetch('/admin/unreviewed-count');
+                const data = await response.json();
+                const badge = document.getElementById('review-count');
+                
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error updating review count:', error);
+            }
+        }
+
+        // Update count on page load and periodically
+        updateReviewCount();
+        setInterval(updateReviewCount, 30000); // Update every 30 seconds
+
+        // View full code function
+        async function viewFullCode(submissionId, preview) {
+            try {
+                const response = await fetch(`/admin/submission/${submissionId}/code`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('codeTeamInfo').textContent = `Team: ${data.teamId} | Problem ${data.problemId}${data.section}`;
+                    document.getElementById('codeLanguageInfo').textContent = `Language: ${data.language === 'py' ? 'Python' : 'C++'}`;
+                    document.getElementById('codeContent').textContent = data.code;
+                    document.getElementById('codeModal').style.display = 'block';
+                } else {
+                    showNotification('Error loading code', 'error');
+                }
+            } catch (error) {
+                showNotification('Error loading code', 'error');
+            }
+        }
+
+        function closeCodeModal() {
+            document.getElementById('codeModal').style.display = 'none';
+        }
+
+        function copyCode() {
+            const codeContent = document.getElementById('codeContent').textContent;
+            navigator.clipboard.writeText(codeContent).then(() => {
+                showNotification('Code copied to clipboard', 'success');
+            }).catch(() => {
+                showNotification('Failed to copy code', 'error');
+            });
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (document.querySelector('.tab-btn.active').dataset.tab === 'submissions') {
+                location.reload();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

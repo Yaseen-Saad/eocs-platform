@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EOCS Problems Platform - Login</title>
+    <link rel="stylesheet" href="/public/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">
+                <h1>EOCS</h1>
+                <p>Problems Platform</p>
+            </div>
+        </div>
+        
+        <div class="login-form-container">
+            <form class="login-form" method="POST" action="/login">
+                <h2>Team Login</h2>
+                
+                <% if (typeof error !== 'undefined') { %>
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <%= error %>
+                    </div>
+                <% } %>
+                
+                <div class="form-group">
+                    <label for="teamId">Team ID</label>
+                    <input type="text" id="teamId" name="teamId" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login to Platform
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                <p><a href="/scoreboard">View Scoreboard</a></p>
+                <p><a href="/admin/login">Admin Panel</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

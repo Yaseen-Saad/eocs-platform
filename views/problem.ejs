@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= problemData ? problemData.title : 'Problem ' + problemId %> - EOCS Platform</title>
+    <link rel="stylesheet" href="/public/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- MathJax for LaTeX support -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="problem-container">
+        <header class="problem-header">
+            <div class="header-content">
+                <div class="breadcrumb">
+                    <a href="/platform">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Platform
+                    </a>
+                </div>
+                <div class="problem-title">
+                    <h1><%= problemData ? problemData.title : 'Problem ' + problemId %></h1>
+                    <div class="problem-meta">
+                        <span class="section-info">Problem <%= problemData ? problemData.section + problemData.number : problemId %></span>
+                        <span class="team-info">Team: <%= teamId %></span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="problem-main">
+            <div class="problem-content">
+                <div class="problem-description">
+                    <h2>Problem Statement</h2>
+                    <div class="problem-text">
+                        <% if (problemData) { %>
+                            <div class="problem-main-description">
+                                <%- problemData.description.replace(/\$\$(.*?)\$\$/g, '$$$$1$$').replace(/\$(.*?)\$/g, '$$$1$$') %>
+                            </div>
+                        <% } else { %>
+                            <div class="no-problem-data">
+                                <h3>Problem <%= problemId %></h3>
+                                <p>Problem details are loading...</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="subtasks-section">
+                    <h2>Subtasks & Submissions</h2>
+                    
+                    <% if (problemData && problemData.sections && problemData.sections.length > 0) { %>
+                        <% problemData.sections.forEach((sectionData, index) => { %>
+                            <div class="subtask-card" data-section="<%= sectionData.name %>">
+                                <div class="subtask-header">
+                                    <h3>Subtask <%= sectionData.name %>: <%= sectionData.title %> (<%= sectionData.maxPoints %> points)</h3>
+                                    <div class="submission-status" id="status-<%= sectionData.name %>">
+                                        <i class="fas fa-spinner fa-spin"></i> Checking status...
+                                    </div>
+                                </div>
+                                
+                                <div class="subtask-description">
+                                    <%- sectionData.description.replace(/\$\$(.*?)\$\$/g, '$$$$1$$').replace(/\$(.*?)\$/g, '$$$1$$') %>
+                                </div>
+
+                                <div class="submission-form-container" id="form-container-<%= sectionData.name %>">
+                                    <!-- Form will be dynamically shown/hidden based on status -->
+                                    <form class="submission-form" id="form-<%= sectionData.name %>" style="display: none;">
+                                        <div class="form-group">
+                                            <label for="language-<%= sectionData.name %>">Programming Language:</label>
+                                            <select id="language-<%= sectionData.name %>" name="language" required>
+                                                <option value="">Select Language</option>
+                                                <option value="py">Python</option>
+                                                <option value="cpp">C++</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="code-<%= sectionData.name %>">Your Solution Code:</label>
+                                            <textarea id="code-<%= sectionData.name %>" name="code" rows="15" placeholder="Paste your solution code here..." required></textarea>
+                                            <div class="code-helper">
+                                                <small>💡 Tip: You can paste code directly with Ctrl+V. The textarea will auto-resize.</small>
+                                                <div class="char-count">
+                                                    <span id="char-count-<%= sectionData.name %>">0</span> characters
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="explanation-<%= sectionData.name %>">Explanation (Optional):</label>
+                                            <textarea id="explanation-<%= sectionData.name %>" name="explanation" rows="3" placeholder="Briefly explain your approach..."></textarea>
+                                        </div>
+
+                                        <button type="submit" class="submit-btn">
+                                            <i class="fas fa-paper-plane"></i>
+                                            Submit Solution for Subtask <%= sectionData.name %>
+                                        </button>
+                                    </form>
+
+                                    <!-- Status Messages -->
+                                    <div class="already-submitted" id="submitted-<%= sectionData.name %>" style="display: none;">
+                                        <div class="success-message">
+                                            <i class="fas fa-check-circle"></i>
+                                            <h4>Subtask <%= sectionData.name %> Already Solved!</h4>
+                                            <p>You have successfully solved this subtask.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="pending-review" id="pending-<%= sectionData.name %>" style="display: none;">
+                                        <div class="pending-message">
+                                            <i class="fas fa-clock"></i>
+                                            <h4>Submission Under Review</h4>
+                                            <p>Your submission for subtask <%= sectionData.name %> is being reviewed.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="no-subtasks">
+                            <p>No subtasks available for this problem.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </main>
+
+        <footer class="problem-footer">
+            <p><a href="/platform">← Back to Platform</a> | <a href="/scoreboard">View Scoreboard</a></p>
+        </footer>
+    </div>
+
+    <script>
+        const problemId = '<%= problemId %>';
+        const teamId = '<%= teamId %>';
+
+        // Check submission status for all subtasks
+        async function checkAllSubmissionStatuses() {
+            try {
+                // Show loading for all sections first
+                <% if (problemData && problemData.sections && problemData.sections.length > 0) { %>
+                    <% problemData.sections.forEach((sectionData) => { %>
+                        (function() {
+                            const elem = document.getElementById('status-<%= sectionData.name %>');
+                            if (elem) elem.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+                        })();
+                    <% }); %>
+                <% } %>
+
+                // Try to use the bulk API first
+                const response = await fetch(`/submission-status/${problemId}`);
+                const data = await response.json();
+                
+                if (data.success && data.statuses) {
+                    // Use the bulk response
+                    <% if (problemData && problemData.sections && problemData.sections.length > 0) { %>
+                        <% problemData.sections.forEach((sectionData) => { %>
+                            updateSectionStatus('<%= sectionData.name %>', data.statuses['<%= sectionData.name %>'] || { status: 'none' });
+                        <% }); %>
+                    <% } %>
+                } else {
+                    // Fallback to individual checks
+                    <% if (problemData && problemData.sections && problemData.sections.length > 0) { %>
+                        <% problemData.sections.forEach((sectionData) => { %>
+                            checkSubmissionStatus('<%= sectionData.name %>');
+                        <% }); %>
+                    <% } %>
+                }
+            } catch (error) {
+                console.error('Error checking submission statuses:', error);
+                // Show error and enable forms
+                <% if (problemData && problemData.sections && problemData.sections.length > 0) { %>
+                    <% problemData.sections.forEach((sectionData) => { %>
+                        const statusDiv<%= sectionData.name %> = document.getElementById('status-<%= sectionData.name %>');
+                        const formDiv<%= sectionData.name %> = document.getElementById('form-<%= sectionData.name %>');
+                        if (statusDiv<%= sectionData.name %>) {
+                            statusDiv<%= sectionData.name %>.innerHTML = '<i class="fas fa-code" style="color: #2196F3;"></i> Ready to Submit';
+                            statusDiv<%= sectionData.name %>.className = 'submission-status ready';
+                        }
+                        if (formDiv<%= sectionData.name %>) {
+                            formDiv<%= sectionData.name %>.style.display = 'block';
+                        }
+                    <% }); %>
+                <% } %>
+            }
+        }
+
+        // Update section status based on data
+        function updateSectionStatus(section, statusData) {
+            const statusDiv = document.getElementById(`status-${section}`);
+            const formDiv = document.getElementById(`form-${section}`);
+            const submittedDiv = document.getElementById(`submitted-${section}`);
+            const pendingDiv = document.getElementById(`pending-${section}`);
+
+            if (!statusDiv) return;
+
+            if (statusData.status === 'correct') {
+                statusDiv.innerHTML = '<i class="fas fa-check-circle" style="color: #4CAF50;"></i> Solved';
+                statusDiv.className = 'submission-status solved';
+                if (submittedDiv) submittedDiv.style.display = 'block';
+                if (formDiv) formDiv.style.display = 'none';
+                if (pendingDiv) pendingDiv.style.display = 'none';
+            } else if (statusData.status === 'pending') {
+                statusDiv.innerHTML = '<i class="fas fa-clock" style="color: #ff9800;"></i> Under Review';
+                statusDiv.className = 'submission-status pending';
+                if (pendingDiv) pendingDiv.style.display = 'block';
+                if (formDiv) formDiv.style.display = 'none';
+                if (submittedDiv) submittedDiv.style.display = 'none';
+            } else {
+                statusDiv.innerHTML = '<i class="fas fa-code" style="color: #2196F3;"></i> Ready to Submit';
+                statusDiv.className = 'submission-status ready';
+                if (formDiv) formDiv.style.display = 'block';
+                if (submittedDiv) submittedDiv.style.display = 'none';
+                if (pendingDiv) pendingDiv.style.display = 'none';
+                
+                // Show penalty info if any
+                if (statusData.penalties && statusData.penalties > 0) {
+                    statusDiv.innerHTML += ` (${statusData.penalties} wrong attempts)`;
+                }
+            }
+        }
+
+        // Check submission status for a specific section
+        async function checkSubmissionStatus(section) {
+            try {
+                const response = await fetch(`/submission-status/${problemId}/${section}`);
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById(`status-${section}`);
+                const formDiv = document.getElementById(`form-${section}`);
+                const submittedDiv = document.getElementById(`submitted-${section}`);
+                const pendingDiv = document.getElementById(`pending-${section}`);
+
+                if (data.status === 'correct') {
+                    statusDiv.innerHTML = '<i class="fas fa-check-circle" style="color: #4CAF50;"></i> Solved';
+                    statusDiv.className = 'submission-status solved';
+                    submittedDiv.style.display = 'block';
+                    formDiv.style.display = 'none';
+                    pendingDiv.style.display = 'none';
+                } else if (data.status === 'pending' || data.status === 'under_review') {
+                    statusDiv.innerHTML = '<i class="fas fa-clock" style="color: #ff9800;"></i> Under Review';
+                    statusDiv.className = 'submission-status pending';
+                    pendingDiv.style.display = 'block';
+                    formDiv.style.display = 'none';
+                    submittedDiv.style.display = 'none';
+                } else {
+                    statusDiv.innerHTML = '<i class="fas fa-code" style="color: #2196F3;"></i> Ready to Submit';
+                    statusDiv.className = 'submission-status ready';
+                    formDiv.style.display = 'block';
+                    submittedDiv.style.display = 'none';
+                    pendingDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.error(`Error checking submission status for section ${section}:`, error);
+                const statusDiv = document.getElementById(`status-${section}`);
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #f44336;"></i> Error';
+                statusDiv.className = 'submission-status error';
+                
+                // Still show the form so user can submit
+                const formDiv = document.getElementById(`form-${section}`);
+                formDiv.style.display = 'block';
+            }
+        }
+
+        // Handle form submissions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check all statuses on load
+            checkAllSubmissionStatuses();
+
+            // Add event listeners to all forms
+            <% if (problemData && problemData.sections && problemData.sections.length > 0) { %>
+                <% problemData.sections.forEach((sectionData) => { %>
+                    const form<%= sectionData.name %> = document.getElementById('form-<%= sectionData.name %>');
+                    if (form<%= sectionData.name %>) {
+                        form<%= sectionData.name %>.addEventListener('submit', async function(e) {
+                            e.preventDefault();
+                            await handleSubmission('<%= sectionData.name %>', this);
+                        });
+
+                        // Auto-resize textarea and add enhancements
+                        const textarea = document.getElementById('code-<%= sectionData.name %>');
+                        const charCount = document.getElementById('char-count-<%= sectionData.name %>');
+                        
+                        if (textarea) {
+                            // Auto-resize functionality
+                            textarea.addEventListener('input', function() {
+                                this.style.height = 'auto';
+                                this.style.height = Math.max(300, this.scrollHeight) + 'px';
+                                
+                                // Update character count
+                                if (charCount) {
+                                    charCount.textContent = this.value.length;
+                                }
+                            });
+                            
+                            // Initialize minimum height
+                            textarea.style.height = '300px';
+                            
+                            // Handle paste events
+                            textarea.addEventListener('paste', function(e) {
+                                setTimeout(() => {
+                                    this.style.height = 'auto';
+                                    this.style.height = Math.max(300, this.scrollHeight) + 'px';
+                                    
+                                    if (charCount) {
+                                        charCount.textContent = this.value.length;
+                                    }
+                                }, 10);
+                            });
+                            
+                            // Tab key for indentation
+                            textarea.addEventListener('keydown', function(e) {
+                                if (e.key === 'Tab') {
+                                    e.preventDefault();
+                                    const start = this.selectionStart;
+                                    const end = this.selectionEnd;
+                                    this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                                    this.selectionStart = this.selectionEnd = start + 4;
+                                }
+                            });
+                        }
+                    }
+                <% }); %>
+            <% } %>
+        });
+
+        // Handle submission for a specific section
+        async function handleSubmission(section, form) {
+            const submitBtn = form.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            
+            try {
+                const formData = new FormData(form);
+                
+                // Debug: Check what we're sending
+                const language = formData.get('language');
+                const code = formData.get('code');
+                const explanation = formData.get('explanation');
+                
+                console.log('Submission debug:', {
+                    section: section,
+                    language: language,
+                    code: code ? `${code.length} characters` : 'null/empty',
+                    explanation: explanation ? `${explanation.length} characters` : 'null/empty'
+                });
+                
+                if (!language || !code) {
+                    alert(`Missing required fields:\nLanguage: ${language || 'missing'}\nCode: ${code ? 'provided' : 'missing'}`);
+                    return;
+                }
+                
+                const response = await fetch(`/submit/${problemId}/${section}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`Submission successful for subtask ${section}! Your solution has been submitted for review.`);
+                    // Refresh the status for this section
+                    checkSubmissionStatus(section);
+                } else {
+                    alert('Submission failed: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert('Submission failed. Please try again.');
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+    </script>
+</body>
+</html>

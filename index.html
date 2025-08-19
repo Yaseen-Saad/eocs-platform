@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EOCS Problems Platform</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #3f3938;
+            color: #f5f0ec;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: rgba(63, 57, 56, 0.9);
+            padding: 3rem;
+            border-radius: 16px;
+            border: 2px solid #ad8231;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #ad8231;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px rgba(173, 130, 49, 0.4);
+        }
+        p {
+            margin-bottom: 2rem;
+            color: #f5f0ec;
+        }
+        .btn {
+            background: linear-gradient(45deg, #ad8231, #e4d5bd);
+            color: #3f3938;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(173, 130, 49, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>EOCS Problems Platform</h1>
+        <p>Welcome to the Egyptian Olympiad in Computational Science Problems Platform</p>
+        <p>To use the platform, please run the Node.js server:</p>
+        <p><strong>npm install && npm start</strong></p>
+        <p>Then access the platform at: <strong>http://localhost:3000</strong></p>
+        <a href="http://localhost:3000" class="btn">Go to Platform</a>
+    </div>
+
+    <script>
+        // Auto-redirect if server is running
+        fetch('http://localhost:3000')
+            .then(() => {
+                window.location.href = 'http://localhost:3000';
+            })
+            .catch(() => {
+                console.log('Server not running. Please start with: npm start');
+            });
+    </script>
+</body>
+</html>
