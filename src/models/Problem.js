@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const problemSchema = new mongoose.Schema({
     id: { type: Number, required: true, unique: true },
-    section: { type: String, required: true, enum: ['A', 'B', 'C', 'D', 'E'] },
+    section: { type: String, required: true, enum: ['1', '2', '3', '4'] }, // Physics, Chemistry, Mathematics, Biology
     number: { type: Number, required: true },
     title: { type: String, required: true },
     description: { type: String, required: true },
