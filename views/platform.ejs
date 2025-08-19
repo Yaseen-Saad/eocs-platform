@@ -205,22 +205,21 @@
                 <div class="problems-section">
                     <h2>Problems</h2>
                     <% if (problems && problems.length > 0) { %>
-                        <% const sectionOrder = ['A', 'B', 'C', 'D', 'E']; %>
+                        <% const sectionOrder = ['1', '2', '3', '4']; %>
                         <% const sectionNames = {
-                            'A': 'Computational Physics',
-                            'B': 'Computational Chemistry', 
-                            'C': 'Computational Mathematics',
-                            'D': 'Computational Biology',
-                            'E': 'Computational Engineering'
+                            '1': 'Physics',
+                            '2': 'Chemistry', 
+                            '3': 'Mathematics',
+                            '4': 'Biology'
                         }; %>
                         
-                        <% sectionOrder.forEach(sectionLetter => { %>
-                            <% const sectionProblems = problems.filter(p => p.section === sectionLetter); %>
+                        <% sectionOrder.forEach(sectionNumber => { %>
+                            <% const sectionProblems = problems.filter(p => p.section === sectionNumber); %>
                             <% if (sectionProblems.length > 0) { %>
                                 <div class="section-group">
                                     <h3 class="section-title">
-                                        <span class="section-badge-large">Section <%= sectionLetter %></span>
-                                        <%= sectionNames[sectionLetter] %>
+                                        <span class="section-badge-large">Section <%= sectionNumber %></span>
+                                        <%= sectionNames[sectionNumber] %>
                                     </h3>
                                     <div class="problems-grid">
                                         <% sectionProblems.forEach(problem => { %>
