@@ -16,6 +16,10 @@
       "dest": "/public/$1"
     },
     {
+      "src": "/favicon.ico",
+      "dest": "/public/favicon.ico"
+    },
+    {
       "src": "/(.*)",
       "dest": "/src/index.js"
     }
