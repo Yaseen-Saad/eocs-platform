@@ -22,14 +22,113 @@
           ['\\[', '\\]']
         ],
         processEscapes: true,
-        processEnvironments: true
+        processEnvironments: true,
+        packages: {'[+]': ['ams', 'newcommand', 'configmacros', 'action', 'unicode']},
+        macros: {
+          nicefrac: ['\\frac{#1}{#2}', 2],
+          si: ['\\text{#1}', 1],
+          kilo: '\\text{k}',
+          joule: '\\text{J}',
+          mole: '\\text{mol}',
+          kelvin: '\\text{K}',
+          per: '\\text{per}',
+          pico: '\\text{p}',
+          meter: '\\text{m}',
+          gram: '\\text{g}',
+          calorie: '\\text{cal}',
+          angstrom: '\\text{Å}',
+          femto: '\\text{f}',
+          second: '\\text{s}'
+        }
+      },
+      svg: {
+        fontCache: 'global'
       },
       options: {
-        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+        renderActions: {
+          addMenu: [0, '', '']
+        }
+      },
+      startup: {
+        ready: () => {
+          MathJax.startup.defaultReady();
+          console.log('MathJax is loaded and ready.');
+        }
       }
     };
+
+    // Function to re-render MathJax when content changes
+    function reRenderMathJax() {
+      if (window.MathJax) {
+        MathJax.typesetPromise().then(() => {
+          console.log('MathJax re-rendered');
+        }).catch((err) => {
+          console.log('MathJax rendering error:', err);
+        });
+      }
+    }
   </script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Additional CSS for better LaTeX rendering -->
+  <style>
+    .problem-text, .subtask-description {
+      line-height: 1.7;
+    }
+    
+    .problem-text p, .subtask-description p {
+      margin-bottom: 1em;
+    }
+    
+    .problem-text code, .subtask-description code {
+      background-color: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    
+    .problem-text table, .subtask-description table {
+      border-collapse: collapse;
+      margin: 1em auto;
+      width: 100%;
+      max-width: 600px;
+    }
+    
+    .problem-text th, .problem-text td,
+    .subtask-description th, .subtask-description td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    
+    .problem-text th, .subtask-description th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+    
+    .problem-text ul, .problem-text ol,
+    .subtask-description ul, .subtask-description ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    
+    .problem-text li, .subtask-description li {
+      margin-bottom: 0.5em;
+    }
+    
+    .mjx-container {
+      margin: 0.5em 0;
+    }
+    
+    .problem-text blockquote, .subtask-description blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 1em;
+      color: #666;
+    }
+  </style>
 </head>
 
 <body>
@@ -63,7 +162,23 @@
           <div class="problem-text">
             <% if (problemData) { %>
             <div class="problem-main-description">
-              <%- problemData.description.replace(/\$\$(.*?)\$\$/g, '$$$$1$$').replace(/\$(.*?)\$/g, '$$$1$$') %>
+              <%- problemData.description
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\\texttt\{(.*?)\}/g, '<code>$1</code>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                .replace(/\|\s*(.*?)\s*\|/g, function(match, content) {
+                  // Simple table handling
+                  if (content.includes('|')) {
+                    const cells = content.split('|').map(cell => `<td>${cell.trim()}</td>`).join('');
+                    return `<tr>${cells}</tr>`;
+                  }
+                  return match;
+                })
+                .replace(/^-\s/gm, '<li>')
+                .replace(/<\/p><p>/g, '</p>\n<p>')
+              %>
             </div>
             <% } else { %>
             <div class="no-problem-data">
@@ -88,7 +203,16 @@
             </div>
 
             <div class="subtask-description">
-              <%- sectionData.description.replace(/\$\$(.*?)\$\$/g, '$$$$1$$').replace(/\$(.*?)\$/g, '$$$1$$') %>
+              <%- sectionData.description
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\\texttt\{(.*?)\}/g, '<code>$1</code>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n-\s/g, '</p><ul><li>')
+                .replace(/\n(\d+)\.\s/g, '</p><ol><li>')
+                .replace(/\n/g, '<br>')
+                .replace(/<\/p><p>/g, '</p>\n<p>')
+              %>
             </div>
 
             <div class="submission-form-container" id="form-container-<%= sectionData.name %>">
