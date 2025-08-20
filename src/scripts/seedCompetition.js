@@ -838,57 +838,85 @@ $$\\text{SNP Rate} = \\frac{\\text{Number of SNPs}}{\\text{Number of positions c
     }
 ];
 
-// Sample teams data
+// Teams data extracted from the EOCS participation form responses - simplified
 const teams = [
     {
         teamId: 'TEAM001',
-        password: 'password123',
-        teamName: 'Code Warriors',
-        members: [
-            { name: 'Ahmed Mohamed', email: 'ahmed@example.com', grade: '12' },
-            { name: 'Sara Ali', email: 'sara@example.com', grade: '11' }
-        ],
-        school: 'Cairo High School'
+        password: 'Debug2025!#Bug',
+        teamName: 'Debug the bug',
+        school: 'EOCS Competition'
     },
     {
         teamId: 'TEAM002',
-        password: 'password123',
-        teamName: 'Algorithm Masters',
-        members: [
-            { name: 'Omar Hassan', email: 'omar@example.com', grade: '12' },
-            { name: 'Fatma Gamal', email: 'fatma@example.com', grade: '12' }
-        ],
-        school: 'Alexandria STEM School'
+        password: 'Algo#Ninja2025',
+        teamName: 'AlgoNinjas',
+        school: 'EOCS Competition'
     },
     {
         teamId: 'TEAM003',
-        password: 'password123',
-        teamName: 'Binary Builders',
-        members: [
-            { name: 'Youssef Khaled', email: 'youssef@example.com', grade: '11' },
-            { name: 'Nour Mahmoud', email: 'nour@example.com', grade: '11' }
-        ],
-        school: 'Giza International School'
+        password: 'Hack@Rathim25',
+        teamName: 'Hackorathim',
+        school: 'STEM October'
     },
     {
         teamId: 'TEAM004',
-        password: 'password123',
-        teamName: 'Data Dynamos',
-        members: [
-            { name: 'Amr Tarek', email: 'amr@example.com', grade: '12' },
-            { name: 'Yasmin Adel', email: 'yasmin@example.com', grade: '12' }
-        ],
-        school: 'Mansoura STEM High School'
+        password: 'Team18*EOCS!',
+        teamName: '18',
+        school: 'EOCS Competition'
     },
     {
         teamId: 'TEAM005',
-        password: 'password123',
-        teamName: 'Python Pros',
-        members: [
-            { name: 'Kareem Samir', email: 'kareem@example.com', grade: '11' },
-            { name: 'Rana Mohamed', email: 'rana@example.com', grade: '11' }
-        ],
-        school: 'Aswan Technology School'
+        password: '3la_Allah#25',
+        teamName: '3la Allah',
+        school: 'EOCS Competition'
+    },
+    {
+        teamId: 'TEAM006',
+        password: 'Logic$Axis25',
+        teamName: 'LogicAxis',
+        school: 'EOCS Competition'
+    },
+    {
+        teamId: 'TEAM007',
+        password: 'Biblio*Tech25',
+        teamName: 'Bibliotech',
+        school: 'EOCS Competition'
+    },
+    {
+        teamId: 'TEAM008',
+        password: 'Future@2025!',
+        teamName: 'Future',
+        school: 'STEM New Cairo'
+    },
+    {
+        teamId: 'TEAM009',
+        password: 'ByteMe#2025',
+        teamName: 'byte me',
+        school: 'STEM Gharbiya'
+    },
+    {
+        teamId: 'TEAM010',
+        password: 'EOCS@Acers25',
+        teamName: 'EOCS Acers',
+        school: 'EOCS Competition'
+    },
+    {
+        teamId: 'TEAM011',
+        password: 'Win*Win2025',
+        teamName: 'Win Win',
+        school: 'EOCS Competition'
+    },
+    {
+        teamId: 'TEAM012',
+        password: 'To#Finals25',
+        teamName: 'To Finals',
+        school: 'EOCS Competition'
+    },
+    {
+        teamId: 'TEAM013',
+        password: 'Cooked@Team25',
+        teamName: 'The cooked team',
+        school: 'EOCS Competition'
     }
 ];
 
@@ -972,7 +1000,7 @@ const seedCompetitionData = async () => {
         console.log('   - Section 2 (Chemistry): 5 problems');
         console.log('   - Section 3 (Mathematics): 5 problems');
         console.log('   - Section 4 (Biology): 5 problems');
-        console.log(`👥 Teams: ${createdTeams.length} teams created`);
+        console.log(`👥 Teams: ${createdTeams.length} teams created from EOCS participation form`);
         console.log(`📊 Scores: ${createdScores.length} score records initialized\n`);
 
         console.log('🔑 Team Login Credentials:');
