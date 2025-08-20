@@ -108,6 +108,10 @@ const requireAuth = async (req, res, next) => {
     try {
         const teamId = req.session.teamId;
         if (!teamId) {
+            // Check if this is an AJAX request
+            if (req.headers['content-type'] === 'application/json' || req.xhr || req.headers.accept.indexOf('json') > -1) {
+                return res.status(401).json({ success: false, message: 'Authentication required. Please log in again.' });
+            }
             return res.redirect('/login');
         }
 
@@ -120,6 +124,10 @@ const requireAuth = async (req, res, next) => {
 
         if (!team || !team.isActive) {
             req.session.destroy();
+            // Check if this is an AJAX request
+            if (req.headers['content-type'] === 'application/json' || req.xhr || req.headers.accept.indexOf('json') > -1) {
+                return res.status(401).json({ success: false, message: 'Team not found or inactive. Please log in again.' });
+            }
             return res.redirect('/login');
         }
 
@@ -128,6 +136,10 @@ const requireAuth = async (req, res, next) => {
         next();
     } catch (error) {
         console.error('Auth middleware error:', error);
+        // Check if this is an AJAX request
+        if (req.headers['content-type'] === 'application/json' || req.xhr || req.headers.accept.indexOf('json') > -1) {
+            return res.status(500).json({ success: false, message: 'Authentication error. Please try again.' });
+        }
         res.redirect('/login');
     }
 };
@@ -670,10 +682,15 @@ app.post('/submit/:problemId/:section', requireAuth, upload.none(), async (req, 
 
 // Clarification request route
 app.post('/clarification', requireAuth, async (req, res) => {
+    console.log('=== CLARIFICATION REQUEST ===');
+    console.log('Request body:', req.body);
+    console.log('Team ID:', req.teamId);
+    
     try {
         const { problemId, question } = req.body;
         
         if (!problemId || !question || !question.trim()) {
+            console.log('❌ Missing required fields:', { problemId, question: !!question });
             return res.json({ success: false, message: 'Please provide a problem ID and question' });
         }
 
@@ -682,19 +699,23 @@ app.post('/clarification', requireAuth, async (req, res) => {
             problemId: parseInt(problemId),
             question: question.trim()
         };
+        
+        console.log('📝 Clarification data:', clarificationData);
 
         if (isConnected) {
             const clarification = new ClarificationRequest(clarificationData);
             await clarification.save();
+            console.log('✅ Clarification saved to database');
         } else {
             // For in-memory storage, we could add this to the storage class
-            console.log('Clarification request (in-memory):', clarificationData);
+            console.log('📝 Clarification request (in-memory):', clarificationData);
         }
 
+        console.log('✅ Clarification request processed successfully');
         res.json({ success: true, message: 'Clarification request submitted successfully!' });
     } catch (error) {
-        console.error('Clarification submission error:', error);
-        res.json({ success: false, message: 'Error submitting clarification request' });
+        console.error('❌ Clarification submission error:', error);
+        res.json({ success: false, message: 'Error submitting clarification request: ' + error.message });
     }
 });
 

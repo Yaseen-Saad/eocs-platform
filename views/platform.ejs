@@ -353,6 +353,15 @@
                         body: JSON.stringify(data)
                     });
 
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            alert('Session expired. Please log in again.');
+                            window.location.href = '/login';
+                            return;
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
                     const result = await response.json();
                     
                     if (result.success) {
@@ -366,7 +375,8 @@
                         alert(result.message || 'Error submitting clarification request');
                     }
                 } catch (error) {
-                    alert('Error submitting clarification request');
+                    console.error('Clarification submission error:', error);
+                    alert('Error submitting clarification request: ' + error.message);
                 }
             });
         }
