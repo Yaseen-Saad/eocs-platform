@@ -789,13 +789,13 @@ app.get('/scoreboard', async (req, res) => {
         
         res.render('scoreboard', { 
             scoreboard, 
-            problems: problemsBySection,
-            allProblems: allProblems
+            problems: allProblems,
+            problemsBySection: problemsBySection
         });
         
     } catch (error) {
         console.error('Scoreboard error:', error);
-        res.render('scoreboard', { scoreboard: [], problems: {}, allProblems: [] });
+        res.render('scoreboard', { scoreboard: [], problems: [], problemsBySection: {} });
     }
 });
 
