@@ -9,8 +9,7 @@
     "dev": "nodemon src/index.js",
     "build": "npm install",
     "vercel-build": "npm install",
-    "seed": "node src/scripts/seedTeams.js",
-    "seed:teams": "node src/scripts/seedTeams.js"
+    "seed": "node src/scripts/seedCompetition.js"
   },
   "keywords": [],
   "author": "",

@@ -1,173 +1,249 @@
-# EOCS Problems Platform
+# EOCS Competition Platform
 
-A simple competition platform for the Egyptian Olympiad in Computational Science (EOCS) that provides a timer-based problems portal with file submission capabilities.
+A comprehensive competitive programming platform designed for the Egyptian Olympiad in Computational Science (EOCS). Built with Express.js and MongoDB, this platform provides a secure, real-time environment for programming competitions with advanced features including live scoring, code submission tracking, clarification systems, and administrative oversight.
 
-## Features
+## Core Features
 
-- **Timer-based Competition**: Shows countdown to competition start and end times
-- **Team Authentication**: Simple login with team ID and password
-- **Problems Interface**: 4 problems with multiple sections (A, B, C, D, E)
-- **File Submissions**: Teams can submit Python (.py) or C++ (.cpp, .cc, .cxx) files
-- **Live Scoreboard**: Public scoreboard with real-time updates
-- **Admin Panel**: Admin interface to manage scores and view submissions
-- **Responsive Design**: Works on desktop and mobile devices
+### Competition Management
+- **Timed Competitions**: Automatic start/end times with countdown timers
+- **Multi-section Problems**: Support for complex problems with subsections (A, B, C, D, E)
+- **Real-time Scoring**: Live leaderboard with penalty calculations
+- **Session Management**: Secure team authentication with session persistence
 
-## Environment Variables
+### Code Submission System  
+- **Multi-language Support**: Python (.py) and C++ (.cpp, .cc, .cxx) submissions
+- **Code Review Interface**: Administrative review system for submitted solutions
+- **Submission Tracking**: Complete history with timestamps and review status
+- **File Management**: Secure handling of source code uploads
 
-Create a `.env` file with the following variables:
+### Communication Tools
+- **Clarification System**: Teams can request clarifications during competition
+- **Admin Announcements**: Broadcast messages to all participating teams
+- **Real-time Updates**: Live notifications for important competition events
+
+### Administrative Dashboard
+- **Score Management**: Manual scoring adjustments and problem status updates
+- **Team Oversight**: Monitor team activity, submissions, and login history
+- **Submission Review**: Code viewing and evaluation interface
+- **Competition Analytics**: Comprehensive statistics and reporting
+
+## Technical Architecture
+
+### Environment Configuration
+
+Create a `.env` file with the following required variables:
 
 ```env
+# Server Configuration
 PORT=3000
+SESSION_SECRET=your-cryptographically-secure-session-key
+
+# Database Configuration
 MONGODB_URI=mongodb://localhost:27017/eocs-platform
-COMPETITION_START_TIME=2025-08-20T09:00:00.000Z
-COMPETITION_END_TIME=2025-08-20T13:00:00.000Z
+
+# Competition Timing
+COMPETITION_START_TIME=2025-08-21T09:00:00.000Z
+COMPETITION_END_TIME=2025-08-21T13:00:00.000Z
+
+# Administrative Access
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin123
+ADMIN_PASSWORD=secure-admin-password
+
+# Optional: External Integration
 GOOGLE_FORM_URL=https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse
-SESSION_SECRET=your-super-secret-key-here
 ```
 
-For production with MongoDB Atlas:
+For production deployment with MongoDB Atlas:
 ```env
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/eocs-platform
 ```
 
-## Installation & Setup
+## Installation & Deployment
 
-1. **Install MongoDB locally** (or use MongoDB Atlas for cloud):
-   - Download from: https://www.mongodb.com/try/download/community
-   - Start MongoDB service
+### Prerequisites
+- Node.js 18.0.0 or higher
+- MongoDB 5.0+ (local) or MongoDB Atlas (cloud)
+- npm or yarn package manager
 
-2. **Install dependencies**:
+### Development Setup
+
+1. **Clone and install dependencies**:
 ```bash
+git clone <repository-url>
+cd simple-form
 npm install
 ```
 
-3. **Seed the database with sample teams**:
+2. **Database initialization**:
 ```bash
 npm run seed
 ```
 
-4. **Start the development server**:
+3. **Development server**:
 ```bash
 npm run dev
 ```
 
-5. **Or start the production server**:
+### Production Deployment
+
 ```bash
+npm run build
 npm start
 ```
 
+The application is optimized for deployment on Vercel with serverless functions support.
+
 ## Database Schema
 
-### Teams Collection
-- `teamId`: Unique team identifier (e.g., "TEAM001")
-- `password`: Hashed password using bcrypt
-- `teamName`: Display name for the team
-- `members`: Array of team members with name, email, grade
-- `school`: School/institution name
-- `loginTime`: Last login timestamp
-- `isActive`: Boolean flag for active teams
-
-### Scores Collection
-- `teamId`: Reference to team
-- `problems`: Object with problem status, trials, penalties
-- `totalScore`: Calculated total score
-- `totalPenalty`: Total penalty in minutes
-- `totalTrials`: Total submission attempts
-
-### Submissions Collection
-- `teamId`: Reference to team
-- `problemId`: Problem number (1-4)
-- `section`: Problem section (A-E)
-- `filename`: Original filename
-- `filePath`: Server file path
-- `language`: Programming language (python/cpp)
-- `submittedAt`: Submission timestamp
-
-## Sample Team Credentials
-
-After running `npm run seed`, you can login with:
-
-- **Team ID**: TEAM001, **Password**: password123
-- **Team ID**: TEAM002, **Password**: password123
-- **Team ID**: TEAM003, **Password**: password123
-- **Team ID**: TEAM004, **Password**: password123
-- **Team ID**: TEAM005, **Password**: password123
-
-## Competition Flow
-
-1. **Before Start**: Teams can login but only see countdown timer
-2. **During Competition**: Teams can access problems and submit solutions
-3. **After End**: Platform shows final results and scoreboard
-
-## Problem Structure
-
-Each problem has 5 sections (A, B, C, D, E) where teams can submit:
-- Python files (.py)
-- C++ files (.cpp, .cc, .cxx)
-
-## Scoring
-
-- Each correct problem gives 1 point
-- Wrong submissions add 10 minutes penalty per trial
-- Teams are ranked by: Score (descending), then Penalty (ascending)
-
-## Deployment
-
-This platform is designed to work with Vercel's serverless functions:
-
-1. Connect your repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy
-
-## Usage
-
-### For Teams
-1. Go to the platform URL
-2. Login with your team ID and password (see sample credentials above)
-3. Wait for the competition timer to reach zero
-4. When active, view problems and submit solutions
-5. Check the public scoreboard to see rankings
-
-### For Admins
-1. Go to `/admin/login`
-2. Login with admin credentials (admin/admin123)
-3. Manage team scores by marking problems as correct/wrong
-4. View recent submissions and team statistics
-
-## File Structure
-
-```
-simple-form/
-├── src/
-│   ├── index.js              # Main Express server
-│   ├── config/
-│   │   └── database.js       # MongoDB connection
-│   ├── models/
-│   │   ├── Team.js          # Team model with authentication
-│   │   ├── Score.js         # Score tracking model
-│   │   └── Submission.js    # File submission model
-│   └── scripts/
-│       └── seedTeams.js     # Database seeding script
-├── views/                   # EJS templates
-├── public/                  # Static assets
-├── uploads/                 # File upload storage
-└── package.json
+### Team Model
+```javascript
+{
+  teamId: String,           // Unique identifier (e.g., "TEAM001")
+  password: String,         // Bcrypt hashed password
+  teamName: String,         // Display name
+  members: [{
+    name: String,
+    email: String,
+    grade: String
+  }],
+  school: String,
+  loginTime: Date,
+  isActive: Boolean,
+  createdAt: Date
+}
 ```
 
-## Design
+### Score Model
+```javascript
+{
+  teamId: String,
+  problems: {
+    1: { sections: {A,B,C,D,E}, trials: Number, penalty: Number },
+    2: { sections: {A,B,C,D,E}, trials: Number, penalty: Number },
+    3: { sections: {A,B,C,D,E}, trials: Number, penalty: Number },
+    4: { sections: {A,B,C,D,E}, trials: Number, penalty: Number }
+  },
+  totalScore: Number,
+  totalPenalty: Number,
+  totalTrials: Number,
+  lastUpdated: Date
+}
+```
 
-The platform uses the same Egyptian-themed design as the main EOCS website with:
-- Egyptian gold (#ad8231) and dark (#3f3938) color scheme
-- Orbitron font for headings
-- Consistent styling with the main EOCS brand
+### Submission Model
+```javascript
+{
+  teamId: String,
+  problemId: Number,
+  section: String,
+  language: String,
+  code: String,
+  originalFilename: String,
+  submittedAt: Date,
+  reviewStatus: String,     // 'pending', 'correct', 'incorrect'
+  reviewedAt: Date,
+  reviewedBy: String,
+  feedback: String
+}
+```
 
-## Notes
+### Additional Models
+- **Announcement**: Competition-wide notifications
+- **ClarificationRequest**: Team questions and admin responses  
+- **Problem**: Problem definitions and metadata
 
-- **Authentication**: Uses bcrypt for password hashing and express-session for session management
-- **Database**: MongoDB with Mongoose ODM for data modeling
-- **File Storage**: Local uploads directory (in production, consider cloud storage)
-- **Sessions**: Stored in MongoDB using connect-mongo
-- **Security**: Helmet for security headers, input validation, and secure session handling
-- **Scalability**: Designed to work with MongoDB Atlas for production deployment
+## API Endpoints
+
+### Authentication Routes
+- `GET /` - Landing page
+- `GET /login` - Team login interface
+- `POST /login` - Team authentication
+- `GET /logout` - Session termination
+
+### Competition Routes
+- `GET /platform` - Main competition dashboard
+- `GET /problem/:id` - Problem overview
+- `GET /problem/:id/:section` - Specific problem section
+- `POST /submit/:problemId/:section` - Code submission
+- `GET /scoreboard` - Public leaderboard
+
+### Administrative Routes
+- `GET /admin/login` - Admin authentication
+- `GET /admin` - Administrative dashboard
+- `POST /admin/update-score` - Manual score adjustments
+- `POST /admin/review-submission` - Submission evaluation
+
+### Communication Routes
+- `POST /clarification` - Submit clarification request
+- `POST /admin/announcement` - Create announcements
+- `POST /admin/clarification/answer` - Respond to clarifications
+
+## Competition Mechanics
+
+### Scoring System
+- **Points**: 1 point per correctly solved problem section
+- **Penalties**: 10 minutes per incorrect submission attempt
+- **Ranking**: Primary by total score (descending), secondary by total penalty (ascending)
+
+### Competition Phases
+1. **Pre-competition**: Teams can log in and view countdown
+2. **Active Phase**: Full platform access, submissions accepted
+3. **Post-competition**: Read-only access, final standings displayed
+
+### Problem Structure
+Each competition problem contains multiple sections (typically A through E), allowing for granular scoring and progressive difficulty.
+
+## Security Features
+
+- **Password Hashing**: Bcrypt with salt rounds for team authentication
+- **Session Security**: MongoDB-backed sessions with secure cookies
+- **Input Validation**: Comprehensive sanitization of all user inputs
+- **Security Headers**: Helmet.js for HTTP security headers
+- **File Upload Safety**: Restricted file types and secure storage handling
+- **Admin Protection**: Role-based access control for administrative functions
+
+## Monitoring & Analytics
+
+The platform includes comprehensive logging and monitoring capabilities:
+- Team activity tracking
+- Submission analytics
+- Competition progress monitoring
+- Error logging and reporting
+- Performance metrics collection
+
+## Architecture Details
+
+### File Structure
+```
+src/
+├── index.js                    # Main application server
+├── config/
+│   ├── database.js            # MongoDB connection management
+│   └── inMemoryStorage.js     # Fallback storage for development
+├── models/
+│   ├── Team.js               # Team authentication and data
+│   ├── Score.js              # Competition scoring logic
+│   ├── Submission.js         # Code submission handling
+│   ├── Announcement.js       # Competition announcements
+│   ├── ClarificationRequest.js # Q&A system
+│   └── Problem.js            # Problem definitions
+└── scripts/
+    └── seedCompetition.js    # Database initialization
+```
+
+### Technology Stack
+- **Backend**: Node.js with Express.js framework
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: Express-session with bcryptjs
+- **Templating**: EJS for server-side rendering
+- **Security**: Helmet.js, CORS, secure session handling
+- **File Processing**: Multer for multipart form handling
+- **Deployment**: Vercel-ready with serverless function support
+
+## Development Notes
+
+- **ES Modules**: Uses modern JavaScript module syntax
+- **Environment Flexibility**: Automatic fallback to in-memory storage for development
+- **Code Quality**: Clean, maintainable architecture with separation of concerns
+- **Error Handling**: Comprehensive error management and user feedback
+- **Performance**: Optimized database queries with proper indexing

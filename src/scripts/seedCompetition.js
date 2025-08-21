@@ -5,12 +5,9 @@ import Team from '../models/Team.js';
 import Score from '../models/Score.js';
 import Problem from '../models/Problem.js';
 
-// Load environment variables
 dotenv.config();
 
-// Competition problems extracted from problems.tex
 const problems = [
-    // SECTION 1: COMPUTATIONAL PHYSICS (4 Problems)
     {
         id: 1,
         section: 1,
@@ -229,7 +226,6 @@ Display a real-time histogram of the system's particle speeds during the simulat
         ])
     },
 
-    // SECTION 2: CHEMISTRY (5 Problems)
     {
         id: 5,
         section: 2,
@@ -429,7 +425,6 @@ Morse Potential: Models attractive and repulsive interactions for diatomic syste
         ])
     },
 
-    // SECTION 3: MATHEMATICS (5 Problems)
     {
         id: 10,
         section: 3,
@@ -595,7 +590,6 @@ Taylor has now asked for your help.
         ])
     },
 
-    // SECTION 4: BIOLOGY (5 Problems)
     {
         id: 15,
         section: 4,
@@ -838,7 +832,6 @@ $$\\text{SNP Rate} = \\frac{\\text{Number of SNPs}}{\\text{Number of positions c
     }
 ];
 
-// Teams data extracted from the EOCS participation form responses - simplified
 const teams = [
     {
         teamId: 'TEAM001',
@@ -922,41 +915,23 @@ const teams = [
 
 const seedCompetitionData = async () => {
     try {
-        console.log('🌱 Starting Competition Data Seeding...\n');
-        
-        // Connect to MongoDB using the URI from .env
         await connectDB();
-        console.log('✅ Connected to MongoDB using .env configuration\n');
-
-        // Clear existing data
-        console.log('🧹 Clearing existing data...');
         await Problem.deleteMany({});
         await Team.deleteMany({});
         await Score.deleteMany({});
-        console.log('✅ Cleared existing problems, teams, and scores\n');
-
-        // Insert problems from problems.tex
-        console.log('📚 Seeding problems from problems.tex...');
+        
         for (const problemData of problems) {
             const problem = new Problem(problemData);
             await problem.save();
-            console.log(`   ✅ Problem ${problemData.section}-${problemData.number}: ${problemData.title}`);
         }
-        console.log(`✅ Successfully inserted ${problems.length} problems\n`);
-
-        // Create teams
-        console.log('👥 Creating teams...');
+        
         const createdTeams = [];
         for (const teamData of teams) {
             const team = new Team(teamData);
             const savedTeam = await team.save();
             createdTeams.push(savedTeam);
-            console.log(`   ✅ Created team: ${teamData.teamId} - ${teamData.teamName}`);
         }
-        console.log(`✅ Successfully created ${createdTeams.length} teams\n`);
-
-        // Create score records with zeros for all problems and sections
-        console.log('📊 Creating zero score records matching problems structure...');
+        
         const scorePromises = teams.map(async (teamData) => {
             const score = new Score({
                 teamId: teamData.teamId,
@@ -964,80 +939,34 @@ const seedCompetitionData = async () => {
                 totalPenalty: 0,
                 problems: new Map()
             });
-
-            // Add all problems from the problems array
+            
             for (const problemData of problems) {
-                const problemScore = {
-                    totalScore: 0,
-                    status: 'unsolved',
-                    sections: new Map()
-                };
-                
-                // Add all sections for this problem
-                for (const [sectionId, sectionData] of problemData.sections) {
-                    problemScore.sections.set(sectionId, {
-                        status: 'unsolved',
+                const problemMap = new Map();
+                for (const [sectionKey] of problemData.sections) {
+                    problemMap.set(sectionKey, {
+                        status: 'not_attempted',
                         score: 0,
-                        trials: 0,
-                        penalty: 0
+                        penalty: 0,
+                        attempts: 0,
+                        submittedAt: null
                     });
                 }
-                
-                score.problems.set(String(problemData.id), problemScore);
+                score.problems.set(problemData.id.toString(), {
+                    status: 'not_attempted',
+                    totalScore: 0,
+                    totalPenalty: 0,
+                    sections: problemMap
+                });
             }
-            
             return await score.save();
         });
-
-        const createdScores = await Promise.all(scorePromises);
-        console.log(`✅ Created ${createdScores.length} zero score records\n`);
-
-        // Display summary
-        console.log('📋 Competition Setup Summary:');
-        console.log('============================');
-        console.log(`📚 Problems: ${problems.length} problems across 4 sections`);
-        console.log('   - Section 1 (Physics): 4 problems');
-        console.log('   - Section 2 (Chemistry): 5 problems');
-        console.log('   - Section 3 (Mathematics): 5 problems');
-        console.log('   - Section 4 (Biology): 5 problems');
-        console.log(`👥 Teams: ${createdTeams.length} teams created from EOCS participation form`);
-        console.log(`📊 Scores: ${createdScores.length} score records initialized\n`);
-
-        console.log('🔑 Team Login Credentials:');
-        console.log('==========================');
-        teams.forEach(team => {
-            console.log(`Team ID: ${team.teamId} | Password: ${team.password} | Team: ${team.teamName}`);
-        });
-
-        console.log('\n📊 Sample Score Structure (Team 1):');
-        console.log('===================================');
-        const sampleScore = createdScores[0];
-        console.log(`Team: ${sampleScore.teamId}`);
-        console.log(`Total Score: ${sampleScore.totalScore}`);
-        console.log(`Total Penalty: ${sampleScore.totalPenalty}`);
-        console.log('Problems:');
         
-        let problemCount = 0;
-        for (let [problemId, problemData] of sampleScore.problems) {
-            const problemInfo = problems.find(p => p.id === parseInt(problemId));
-            console.log(`  Problem ${problemId} (${problemInfo.title}):`);
-            console.log(`    Status: ${problemData.status}, Score: ${problemData.totalScore}`);
-            console.log(`    Sections: ${problemData.sections.size} sections`);
-            problemCount++;
-            if (problemCount >= 3) {
-                console.log(`    ... and ${sampleScore.problems.size - 3} more problems`);
-                break;
-            }
-        }
-
-        console.log('\n🎯 Seeding completed successfully!');
-        console.log(`📡 MongoDB URI: ${process.env.MONGODB_URI.replace(/\/\/.*@/, '//***:***@')}`);
-        console.log('🌐 Competition is ready to start!\n');
-
+        await Promise.all(scorePromises);
+        console.log('Seeding completed successfully.');
         process.exit(0);
 
     } catch (error) {
-        console.error('❌ Error seeding competition data:', error);
+        console.error('Error seeding data:', error);
         process.exit(1);
     }
 };

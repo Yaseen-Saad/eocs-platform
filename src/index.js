@@ -82,26 +82,8 @@ app.set('views', path.join(__dirname, '..', 'views'));
 // Static files
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
-// Configure multer for file uploads (Vercel-compatible)
-const upload = multer({
-    storage: multer.memoryStorage(), // Use memory storage for Vercel
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
-    },
-    fileFilter: (req, file, cb) => {
-        // Allow only Python and C++ files
-        if (file.mimetype === 'text/x-python' || 
-            file.mimetype === 'text/x-c++src' || 
-            file.originalname.endsWith('.py') || 
-            file.originalname.endsWith('.cpp') || 
-            file.originalname.endsWith('.cc') || 
-            file.originalname.endsWith('.cxx')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only Python (.py) and C++ (.cpp, .cc, .cxx) files are allowed!'));
-        }
-    }
-});
+// Configure multer for form data parsing
+const upload = multer();
 
 // Middleware to check if team is authenticated
 const requireAuth = async (req, res, next) => {
